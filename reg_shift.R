@@ -1,9 +1,6 @@
-
-### Install/load packages
-# devtools::install_github("mawp/spict/spict")
-
+rm(list = ls())
 library(spict)
-source("functions.R")
+#source("functions.R")
 
 
 
@@ -66,7 +63,7 @@ Anch$timeI[[2]] <- timeI2
 Anch$timeI[[3]] <- timeI3
 Anch$timeI[[4]] <- timeI4
 
-Anch <- check.inp(Anch)
+#Anch <- check.inp(Anch)
 
 
 
@@ -87,6 +84,16 @@ Anch$priors$logsdi <- list(c(log(0.10), 0.15, 1), c(log(0.10), 0.15, 1), c(log(0
 Anch$priors$logbkfrac <- c(log(1), 0.05, 1) # B/K B at beg pretty close to K
 
 Anch$msytype <- "d"
+
+Anch$dteuler <- 1/16
+dteuler <- 1/16
+## regime shift
+nt1 = length(seq(1950,1971,dteuler))
+nt2 = length(seq(1971+dteuler,1993,dteuler))
+nt3  = length(seq(1993+dteuler,2024,dteuler))
+Anch$MSYregime <- as.factor(c(rep(1,nt1), rep(2,nt2), rep(3,nt3) ))
+Anch$ini$logqf = log(0.05)
+Anch <- check.inp(Anch)
 
 
 
