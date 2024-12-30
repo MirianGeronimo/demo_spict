@@ -943,7 +943,8 @@ check.inp <- function(inp, verbose = TRUE, mancheck = TRUE){
     inp$ini$gamma <- calc.gamma(n)
     # logK
     if (!'logK' %in% names(inp$ini)){
-        inp$ini$logK <- log(4*max(inp$obsC))
+	#inp$ini$logK <- log(4*max(inp$obsC))
+        inp$ini$logK <- c( log(4*max(inp$obsC[1:85])), log(4*max(inp$obsC[86:161])), log(4*max(inp$obsC[162:272])) )
     }
     # logr
     if ('logr' %in% names(inp$ini) & 'logm' %in% names(inp$ini)){
@@ -1049,7 +1050,7 @@ check.inp <- function(inp, verbose = TRUE, mancheck = TRUE){
         logmaxI <- log(max(inp$obsI[[1]]))
     }
     #logmaxI <- ifelse(length(inp$obsI)==0, 0, log(max(inp$obsI[[1]])))
-    if (!'logq' %in% names(inp$ini)) inp$ini$logq <- logmaxI - inp$ini$logK
+    if (!'logq' %in% names(inp$ini)) inp$ini$logq <- logmaxI - max(inp$ini$logK)
     if (sum(inp$nobsI)>0) inp <- check.mapped.ini(inp, 'logq', 'nq')
     if (inp$nobsE > 0){
         logmaxE <- log(max(inp$obsE))
@@ -1135,18 +1136,18 @@ check.inp <- function(inp, verbose = TRUE, mancheck = TRUE){
         inp$ini$logu <- matrix(log(1)+1e-3, 2*length(inp$ini$logsdu), inp$ns)
     }
     if (!"logB" %in% names(inp$ini)){
-        inp$ini$logB <- rep(inp$ini$logK + log(0.5), inp$ns)
-    } else if (length(inp$ini$logB) > inp$ns){
-        if(verbose) warning('Wrong length of inp$ini$logB: ', length(inp$ini$logB),
-                            '. Should be equal to inp$ns: ', inp$ns,
-                            '. Setting length of logB equal to inp$ns (removing beyond inp$ns).')
-        inp$ini$logB <- inp$ini$logB[1:inp$ns]
-    } else if (length(inp$ini$logB) < inp$ns){
-        if(verbose) warning('Wrong length of inp$ini$logB: ', length(inp$ini$logB),
-                            '. Should be equal to inp$ns: ', inp$ns,
-                            '. Resetting logB.')
-        inp$ini$logB <- rep(inp$ini$logK + log(0.5), inp$ns)
-    }
+	inp$ini$logB <- c(rep(inp$ini$logK[1] + log(0.5), nt1), rep(inp$ini$logK[2] + log(0.5), nt2), rep(inp$ini$logK[3] + log(0.5), nt3))
+} else if (length(inp$ini$logB) > inp$ns){
+  if(verbose) warning('Wrong length of inp$ini$logB: ', length(inp$ini$logB),
+                      '. Should be equal to inp$ns: ', inp$ns,
+                      '. Setting length of logB equal to inp$ns (removing beyond inp$ns).')
+  inp$ini$logB <- inp$ini$logB[1:inp$ns]
+} else if (length(inp$ini$logB) < inp$ns){
+  if(verbose) warning('Wrong length of inp$ini$logB: ', length(inp$ini$logB),
+                      '. Should be equal to inp$ns: ', inp$ns,
+                      '. Resetting logB.')
+  inp$ini$logB <- c(rep(inp$ini$logK[1] + log(0.5), nt1), rep(inp$ini$logK[2] + log(0.5), nt2), rep(inp$ini$logK[3] + log(0.5), nt3))
+}
     if (!"logmre" %in% names(inp$ini)){
         inp$ini$logmre <- rep(log(1), inp$ns)
     } else if (length(inp$ini$logmre) > inp$ns){

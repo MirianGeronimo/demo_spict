@@ -165,7 +165,7 @@ Type objective_function<Type>::operator() ()
   // PARAMETERS
   PARAMETER_VECTOR(logm);      // m following the Fletcher formulation (see Prager 2002)
   PARAMETER(mu);               // Coefficient for covariate info for logm
-  PARAMETER(logK);             // Carrying capacity
+  PARAMETER_VECTOR(logK);             // Carrying capacity
   PARAMETER_VECTOR(logq);      // Catchability for index
   PARAMETER(logqf);            // Catchability for effort
   PARAMETER(logn);             // Pella-Tomlinson exponent
@@ -241,7 +241,10 @@ Type objective_function<Type>::operator() ()
   Type robfac = 1.0 + exp(logp1robfac);
   vector<Type> m(nm);
   for(int i=0; i<nm; i++){ m(i) = exp(logm(i)); }
-  Type K = exp(logK);
+
+  vector<Type> K(nm);
+  for(int i=0; i<nm; i++){ K(i) = exp(logK(i)); }
+
   vector<Type> q(nq);
   for(int i=0; i<nq; i++){ q(i) = exp(logq(i)); }
   vector<Type> logq2(nq);
@@ -327,7 +330,7 @@ Type objective_function<Type>::operator() ()
   int flag = asDouble(n) > 1; // Cast n as double to calc flag
   for(int i=0; i<nm; i++){
     // Deterministic reference points
-    Bmsyd(i) = K * pow(1.0/n, 1.0/(n-1.0));
+    Bmsyd(i) = K(i) * pow(1.0/n, 1.0/(n-1.0));
     Fmsyd(i) = MSYd(i)/Bmsyd(i);
     // Stochastic reference points (NOTE: only proved for n>1, Bordet and Rivest (2014))
     // The stepfun ensures that stochastic reference points are only used if n > 1.
@@ -431,18 +434,22 @@ Type objective_function<Type>::operator() ()
   //vector<Type> rp(nm);
   //vector<Type> logrp(nm);
   for(int i=0; i<nm; i++){
-    rold(i) =  CppAD::abs(gamma * m(i) / K);
+    rold(i) =  CppAD::abs(gamma * m(i) / K(i));
     logrold(i) = log(rold(i));
     rc(i) = CppAD::abs(2.0 * rold(i) * (n - 1.0) / n);
     logrc(i) = log(rc(i));
     //rp(i) = abs(r(i) * (n - 1.0));
     //logrp(i) = log(rp(i));
-    r(i) = m(i)/K * pow(n,(n/(n-1.0))); //abs(r(i) * (n - 1.0));
+    r(i) = m(i)/K(i) * pow(n,(n/(n-1.0))); //abs(r(i) * (n - 1.0));
     logr(i) = log(r(i));
     //std::cout << " -- n: " << n << " -- gamma: " << gamma << n << " -- m(i): " << m(i)<< n << " -- K: " << K << " -- r(i): " << r(i) << " -- logr(i): " << logr(i) << std::endl;
   }
+  //nm es el numero de regimenes
+  int n_for_reg;
   for(int i=0; i<ns; i++){
-    logrre(i) = log(mvec(i)/K * pow(n,(n/(n-1.0))));
+	  n_for_reg = MSYregime(i);
+	  logrre(i) = log(mvec(i)/K(n_for_reg) * pow(n,(n/(n-1.0))));
+
   }
   Type BmsyB0 = pow(Type(1)/n,Type(1)/(n-Type(1)) );
   Type likval;
@@ -453,7 +460,7 @@ Type objective_function<Type>::operator() ()
     for(int i=0; i<nm; i++){ std::cout << "INPUT: logm(i): " << logm(i) << " -- i: " << i << std::endl; }
     for(int i=0; i<logphi.size(); i++){ std::cout << "INPUT: logphi(i): " << logphi(i) << " -- i: " << i << std::endl; }
     for(int i=0; i<logphipar.size(); i++){ std::cout << "INPUT: logphipar(i): " << logphipar(i) << " -- i: " << i << std::endl; }
-    std::cout << "INPUT: logK: " << logK << std::endl;
+    //std::cout << "INPUT: logK: " << logK << std::endl;
     for(int i=0; i<nq; i++){ std::cout << "INPUT: logq(i): " << logq(i) << " -- i: " << i << std::endl; }
     std::cout << "INPUT: logn: " << logn << std::endl;
     std::cout << "INPUT: logsdf: " << logsdf << std::endl;
@@ -485,9 +492,9 @@ Type objective_function<Type>::operator() ()
   // regarded as a likelihood to be compared with likelihoods from other models.
   // Only apply these if there is no "manual" prior on the parameter and if stabilise == 1
   if (stabilise == 1){
-    if (priorbkfrac(2) != 1){
-      ans -= dnorm(logB(0) - logK, Type(-0.2234), Type(10.0), 1);
-    }
+    //if (priorbkfrac(2) != 1){
+    //  ans -= dnorm(logB(0) - logK, Type(-0.2234), Type(10.0), 1);
+    //}
     //ans -= dnorm(logB(0), Type(10.0), Type(10.0), 1);
     if(priorF(2) != 1){
       ans -= dnorm(logF(0), Type(-0.2234), Type(10.0), 1);
@@ -536,9 +543,9 @@ Type objective_function<Type>::operator() ()
   if((priorr(2) == 1) & (nm == 1)){
     ans-= dnorm(logr(0), priorr(0), priorr(1), 1); // Prior for logr
   }
-  if(priorK(2) == 1){
-    ans-= dnorm(logK, priorK(0), priorK(1), 1); // Prior for logK
-  }
+  //if(priorK(2) == 1){
+  //  ans-= dnorm(logK, priorK(0), priorK(1), 1); // Prior for logK
+  //}
   //if((priorm(2) == 1) & (nm == 1)){
   //  ans-= dnorm(logm(0), priorm(0), priorm(1), 1); // Prior for logm
   //}
@@ -558,9 +565,9 @@ Type objective_function<Type>::operator() ()
   if(priorqf(2) == 1){
     ans-= dnorm(logqf, priorqf(0), priorqf(1), 1); // Prior for logqf
   }
-  if(priorbkfrac(2) == 1){
-    ans-= dnorm(logB(0) - logK, priorbkfrac(0), priorbkfrac(1), 1); // Prior for logbkfrac
-  }
+  //if(priorbkfrac(2) == 1){
+   // ans-= dnorm(logB(0) - logK, priorbkfrac(0), priorbkfrac(1), 1); // Prior for logbkfrac
+  //}
   if(priorsdb(2) == 1){
     ans-= dnorm(logsdb, priorsdb(0), priorsdb(1), 1); // Prior for logsdb
   }
@@ -820,14 +827,16 @@ Type objective_function<Type>::operator() ()
   }
   vector<Type> logBpred(ns);
   vector<Type> residB(ns-1);
+  int n_for_reg2;
   for(int i=0; i<(ns-1); i++){
+	  n_for_reg2 = MSYregime(i);
     // To predict B(i) use dt(i-1), which is the time interval from t_i-1 to t_i
     if(simple==0){
-      logBpred(i+1) = predictlogB(B(i), F(i), gamma, mvec(i), K, dt(i), n, sdb2);
+	logBpred(i+1) = predictlogB(B(i), F(i), gamma, mvec(i), K(n_for_reg2), dt(i), n, sdb2);
     } else {
       Type Ftmp = 0.0;
       // Use naive approach
-      Type Bpredtmp = exp(predictlogB(B(i), Ftmp, gamma, mvec(i), K, dt(i), n, sdb2) + 0.5*sdb2*dt(i)) - exp(logobsC(i));
+      Type Bpredtmp = exp(predictlogB(B(i), Ftmp, gamma, mvec(i), K(n_for_reg2), dt(i), n, sdb2) + 0.5*sdb2*dt(i)) - exp(logobsC(i));
       if(Bpredtmp < 0) Bpredtmp = 1e-8; // Ugly ugly ugly hack to avoid taking log of negative
       logBpred(i+1) = log(Bpredtmp);
       logFs(i) = logobsC(i) - logB(i); // Calculate fishing mortality
@@ -1095,7 +1104,11 @@ Type objective_function<Type>::operator() ()
   Type Bp = B(pind);
   Type logBp = log(Bp);
   Type logBpBmsy = logBp - logBmsyvec(pind);
-  Type logBpK = logBp - logK;
+  // Type logBpK = logBp - logK;
+  vector<Type> logBpK(nm);
+  for(int i=0; i<nm; i++){
+    logBpK(i) = logBp - logK(i);
+  }
   Type logFp = logFs(pind);
   Type logFpFmsy = logFp - logFmsyvec(pind);
 
@@ -1116,14 +1129,22 @@ Type objective_function<Type>::operator() ()
   Type Bm = B(mind);
   Type logBm = log(Bm);
   Type logBmBmsy = logBm - logBmsyvec(mind);
-  Type logBmK = logBm - logK;
+  //Type logBmK = logBm - logK;
+  vector<Type> logBmK(nm);
+  for(int i=0; i<nm; i++){
+    logBmK(i) = logBm - logK(i);
+  }
   Type logFm = logFs(mind);
   Type logFmFmsy = logFm - logFmsyvec(mind);
 
   // Biomass and fishing mortality at last time point
   Type logBl = logB(indlastobs-1);
   Type logBlBmsy = logBl - logBmsyvec(indlastobs-1);
-  Type logBlK = logBl - logK;
+  //Type logBlK = logBl - logK;
+  vector<Type> logBlK(nm);
+  for(int i=0; i<nm; i++){
+    logBlK(i) = logBl - logK(i);
+  }
   Type logFl = logFs(indlastobs-1);
   Type logFlFmsy = logFl - logFmsyvec(indlastobs-1);
 
@@ -1149,7 +1170,11 @@ Type objective_function<Type>::operator() ()
   //std::cout << "logFFmsy: " << logFFmsy << std::endl;
 
   //
-  Type logbkfrac = logB(0) - logK;
+  //Type logbkfrac = logB(0) - logK;
+  vector<Type> logbkfrac(nm);
+  for(int i=0; i<nm; i++){
+    logbkfrac(i) = logB(0) - logK(i);
+  }
 
   if(dbg > 0){
     std::cout << "--- DEBUG: Calculations done, doing ADREPORTS --- ans: " << ans << std::endl;
@@ -1307,6 +1332,9 @@ Type objective_function<Type>::operator() ()
   if(residFlag){
     ADREPORT(residB);
     ADREPORT(residF);
+  }
+  for(int i=0; i<nm; i++){
+	  std::cout<< "logK"<< i << " :" << logK(i)<< std::endl;
   }
 
   return ans;
