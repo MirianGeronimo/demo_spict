@@ -291,7 +291,7 @@ sumspict.drefpoints <- function(rep, ndigits=8, CI = 0.95){
     colnames(derout) <- colnms
     nr <- length(rep$inp$ini$logr)
     if(nr > 1){
-        rownames(derout) <- c(t(outer(c('Bmsyd', 'Fmsyd', 'MSYd'), 1:2, paste0)))
+        rownames(derout) <- c(t(outer(c('Bmsyd', 'Fmsyd', 'MSYd'), 1:3, paste0)))
     } else {
         rownames(derout) <- c('Bmsyd', 'Fmsyd', 'MSYd')
     }
@@ -326,7 +326,7 @@ sumspict.srefpoints <- function(rep, ndigits=8, CI = 0.95){
     colnames(derout) <- colnms
     nr <- length(rep$inp$ini$logr)
     if(nr > 1){
-        rownames(derout) <- c(t(outer(c('Bmsys', 'Fmsys', 'MSYs'), 1:2, paste0)))
+        rownames(derout) <- c(t(outer(c('Bmsys', 'Fmsys', 'MSYs'), 1:3, paste0)))
     } else {
         rownames(derout) <- c('Bmsys', 'Fmsys', 'MSYs')
     }
