@@ -69,7 +69,10 @@ Anch$timeI[[4]] <- timeI4
 
 ### Set priors
 
-Anch$priors$logK <- c(log(17.1), 0.20, 1) # K (Csirke et al. 1996)
+#Valor inicial antiguo de logK
+#Anch$priors$logK <- c(log(17.1), 0.20, 1) # K (Csirke et al. 1996)
+#Valor inicial actual de logK
+#Anch$ini$logK <- c( log(4*max(Anch$obsC[1:85])), log(4*max(Anch$obsC[86:161])), log(4*max(Anch$obsC[162:272])) )
 
 Anch$priors$logq <- list(c(log(1), 0.20, 1), c(log(1), 0.15, 1), c(log(1), 0.10, 1), c(log(1), 0.15, 1)) # q
 
