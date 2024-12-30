@@ -83,8 +83,9 @@ Anch$priors$logsdi <- list(c(log(0.10), 0.15, 1), c(log(0.10), 0.15, 1), c(log(0
 
 Anch$priors$logbkfrac <- c(log(1), 0.05, 1) # B/K B at beg pretty close to K
 
+Anch$priors$logm <- list(c(log(6), 0.20, 1), c(log(2), 0.15, 1), c(log(5), 0.10, 1)) # m
+
 Anch$msytype <- "d"
-Anch$ini$logm <- c(log(8), log(2), log(5))
 
 Anch$dteuler <- 1/16
 dteuler <- 1/16
