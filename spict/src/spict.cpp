@@ -137,7 +137,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(priorr);         // Prior vector for r, [log(mean), stdev in log, useflag]
   //DATA_VECTOR(priorrp);        // Prior vector for rp, [log(mean), stdev in log, useflag]
   DATA_VECTOR(priorK);         // Prior vector for K, [log(mean), stdev in log, useflag]
-  DATA_VECTOR(priorm);         // Prior vector for m, [log(mean), stdev in log, useflag]
+  DATA_MATRIX(priorm);         // Prior vector for m, [log(mean), stdev in log, useflag]
   DATA_VECTOR(priormu);        // Prior vector for mu, [log(mean), stdev in log, useflag]
   DATA_MATRIX(priorq);         // Prior vector for q, [log(mean), stdev in log, useflag]
   DATA_VECTOR(priorqf);        // Prior vector for qf, [log(mean), stdev in log, useflag]
@@ -539,8 +539,13 @@ Type objective_function<Type>::operator() ()
   if(priorK(2) == 1){
     ans-= dnorm(logK, priorK(0), priorK(1), 1); // Prior for logK
   }
-  if((priorm(2) == 1) & (nm == 1)){
-    ans-= dnorm(logm(0), priorm(0), priorm(1), 1); // Prior for logm
+  //if((priorm(2) == 1) & (nm == 1)){
+  //  ans-= dnorm(logm(0), priorm(0), priorm(1), 1); // Prior for logm
+  //}
+  for(int i=0; i<nm; i++){
+    if(priorm(i,2) == 1){
+      ans-= dnorm(logm(i), priorm(i,0), priorm(i, 1), 1); // Prior for logq - log-normal
+    }
   }
   if((priormu(2) == 1) & (nm == 1)){
     ans-= dnorm(mu, priormu(0), priormu(1), 1); // Prior for mu
